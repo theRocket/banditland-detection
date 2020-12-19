@@ -1,11 +1,15 @@
-Get .caffemodel file (23MB) from the following zip file and place in `people-counting-opencv/mobilenet_ssd` folder 
+[Final Project Report (PDF)](cs498IoT_FinalProject_TeamMvF.pdf)
+
+## STEPS
+
+1) Get .caffemodel file (23MB) from the following zip file and place in `people-counting-opencv/mobilenet_ssd` folder 
 
 Source: [PyImageSearch: OpenCV People Counter](https://www.pyimagesearch.com/2018/08/13/opencv-people-counter/)
 
 http://s3-us-west-2.amazonaws.com/static.pyimagesearch.com/people-counting/people-counting-opencv.zip
 
 
-Change directory into un the following command:
+2) Change directory into un the following command:
 ```
  python3 people_counter.py
 ```
@@ -21,7 +25,7 @@ Default Args and their meaning here:
 "-f", "--fps", type=int, default=20, help="FPS of output video"
 "-c", "--codec", type=str, default="MJPG", help="codec of output video"
 ```
-If won't restart after multiple runs:
+3) If the camera won't restart after multiple runs, the gstreamer pipeline may be jammed. Try:
 ```
 sudo systemctl restart nvargus-daemon
 ```
