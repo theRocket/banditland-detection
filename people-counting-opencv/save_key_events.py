@@ -27,13 +27,19 @@ args = vars(ap.parse_args())
 # initialize the video stream and allow the camera sensor to
 # warmup
 print("[INFO] warming up camera...")
-vs = VideoStream(usePiCamera=args["picamera"] > 0).start()
+camSet='nvarguscamerasrc sensor-id=0 wbmode=2 tnr-mode=2 tnr-strength=1'
+camSet+=' ! video/x-raw(memory:NVMM), width=3264, height=2464, framerate=21/1, format=NV12'
+camSet+=' ! nvvidconv flip-method=2 ! video/x-raw, width=800, height=600, format=BGRx'
+camSet+=' ! videoconvert ! video/x-raw, format=BGR ! appsink'
+
+vs=cv2.VideoCapture(camSet)
+# vs = VideoStream(usePiCamera=args["picamera"] > 0).start()
 time.sleep(2.0)
 
-# define the lower and upper boundaries of the "green" ball in
+# define the lower and upper boundaries of the "blue" ball in
 # the HSV color space
-greenLower = (29, 86, 6)
-greenUpper = (64, 255, 255)
+blueLower = (0, 0, 128)
+blueUpper = (123, 104, 238)
 
 # initialize key clip writer and the consecutive number of
 # frames that have *not* contained any action
@@ -45,8 +51,8 @@ while True:
 	# grab the current frame, resize it, and initialize a
 	# boolean used to indicate if the consecutive frames
 	# counter should be updated
-	frame = vs.read()
-	frame = imutils.resize(frame, width=600)
+	ret, frame = vs.read()
+	#frame = imutils.resize(frame, width=800)
 	updateConsecFrames = True
 
 	# blur the frame and convert it to the HSV color space
@@ -56,7 +62,7 @@ while True:
 	# construct a mask for the color "green", then perform
 	# a series of dilations and erosions to remove any small
 	# blobs left in the mask
-	mask = cv2.inRange(hsv, greenLower, greenUpper)
+	mask = cv2.inRange(hsv, blueLower, blueUpper)
 	mask = cv2.erode(mask, None, iterations=2)
 	mask = cv2.dilate(mask, None, iterations=2)
 
@@ -118,4 +124,4 @@ if kcw.recording:
 
 # do a bit of cleanup
 cv2.destroyAllWindows()
-vs.stop()
+vs.release()

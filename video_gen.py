@@ -26,10 +26,17 @@ print("[INFO] warming up camera...")
 
 # initialize the FourCC, video writer, dimensions of the frame, and
 # zeros array
-dispW=1280
-dispH=960
+dispW=800
+dispH=600
 flip=2
-camSet='nvarguscamerasrc !  video/x-raw(memory:NVMM), width=3264, height=2464, format=NV12, framerate=21/1 ! nvvidconv flip-method='+str(flip)+' ! video/x-raw, width='+str(dispW)+', height='+str(dispH)+', format=BGRx ! videoconvert ! video/x-raw, format=BGR ! appsink'
+
+# check gst-inspect-1.0 nvarguscamerasrc for property options
+camSet='nvarguscamerasrc sensor-id=0 wbmode=2 tnr-mode=2 tnr-strength=1'
+camSet+=' ! video/x-raw(memory:NVMM), width=3264, height=2464, framerate=21/1, format=NV12'
+camSet+=' ! nvvidconv flip-method=2'
+camSet+=' ! video/x-raw, width='+str(dispW)+', height='+str(dispH)+', format=BGRx'
+camSet+=' ! videoconvert ! video/x-raw, format=BGR ! appsink'
+
 cam = cv2.VideoCapture(camSet)
 
 # while True:
