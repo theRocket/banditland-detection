@@ -1,6 +1,6 @@
 [Final Project Report (PDF)](cs498IoT_FinalProject_TeamMvF.pdf)
 
-## STEPS
+#### Steps
 
 1) Get .caffemodel file (23MB) from the following zip file and place in `people-counting-opencv/mobilenet_ssd` folder 
 
@@ -9,11 +9,11 @@ Source: [PyImageSearch: OpenCV People Counter](https://www.pyimagesearch.com/201
 http://s3-us-west-2.amazonaws.com/static.pyimagesearch.com/people-counting/people-counting-opencv.zip
 
 
-2) Change directory into un the following command:
+2) Change directory into `people-counting-opencv` and run the following command:
 ```
  python3 people_counter.py
 ```
-Default Args and their meaning here:
+The default Args and their meaning are listed here:
 ```
 "-p", "--prototxt", default='./mobilenet_ssd/MobileNetSSD_deploy.prototxt', help="path to Caffe 'deploy' prototxt file"
 "-m", "--model", default='./mobilenet_ssd/MobileNetSSD_deploy.prototxt', help="path to Caffe pre-trained model"
