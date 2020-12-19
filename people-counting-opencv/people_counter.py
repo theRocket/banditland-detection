@@ -26,19 +26,19 @@ import cv2
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-p", "--prototxt", required=True,
+ap.add_argument("-p", "--prototxt", default='./mobilenet_ssd/MobileNetSSD_deploy.prototxt',
 	help="path to Caffe 'deploy' prototxt file")
-ap.add_argument("-m", "--model", required=True,
+ap.add_argument("-m", "--model", default='./mobilenet_ssd/MobileNetSSD_deploy.caffemodel',
 	help="path to Caffe pre-trained model")
 ap.add_argument("-i", "--input", type=str,
 	help="path to optional input video file")
-ap.add_argument("-d", "--confidence", type=float, default=0.6,
+ap.add_argument("-d", "--confidence", type=float, default=0.8,
 	help="minimum probability to filter weak detections")
 ap.add_argument("-s", "--skip-frames", type=int, default=30,
 	help="# of skip frames between detections")
 ap.add_argument("-b", "--buffer-size", type=int, default=32,
 	help="buffer size of video clip writer")
-ap.add_argument("-o", "--output", type=str, required=True,
+ap.add_argument("-o", "--output", type=str, default='output',
 	help="path to output directory")
 ap.add_argument("-f", "--fps", type=int, default=20,
 	help="FPS of output video")
@@ -101,8 +101,7 @@ trackableObjects = {}
 # initialize the total number of frames processed thus far, along
 # with the total number of objects that have moved either up or down
 totalFrames = 0
-totalDown = 0
-totalUp = 0
+totalPersons = 0
 
 # start the frames per second throughput estimator
 fps = FPS().start()
@@ -175,13 +174,10 @@ while True:
 				# if the class label is not a person, ignore it
 				if CLASSES[idx] != "person":
 					continue
-					updateConsecFrames = False
 				else:
 					updateConsecFrames = True
 
-				# reset the number of consecutive frames with
-				# *no* action to zero and draw the circle
-				# surrounding the object
+				# reset the number of consecutive frames with *no* action to zero
 				consecFrames = 0
 				
 				# compute the (x, y)-coordinates of the bounding box
@@ -216,6 +212,8 @@ while True:
 			# set the status of our system to be 'tracking' rather
 			# than 'waiting' or 'detecting'
 			status = "Tracking"
+			# reset the number of consecutive frames with *no* action to zero
+			consecFrames = 0
 
 			# update the tracker and grab the updated position
 			tracker.update(rgb)
@@ -229,11 +227,6 @@ while True:
 
 			# add the bounding box coordinates to the rectangles list
 			rects.append((startX, startY, endX, endY))
-
-	# draw a horizontal line in the center of the frame -- once an
-	# object crosses this line we will determine whether they were
-	# moving 'up' or 'down'
-	cv2.line(frame, (0, H // 2), (W, H // 2), (0, 255, 255), 2)
 
 	# use the centroid tracker to associate the (1) old object
 	# centroids with (2) the newly computed object centroids
@@ -262,19 +255,8 @@ while True:
 
 			# check to see if the object has been counted or not
 			if not to.counted:
-				# if the direction is negative (indicating the object
-				# is moving up) AND the centroid is above the center
-				# line, count the object
-				if direction < 0 and centroid[1] < H // 2:
-					totalUp += 1
-					to.counted = True
-
-				# if the direction is positive (indicating the object
-				# is moving down) AND the centroid is below the
-				# center line, count the object
-				elif direction > 0 and centroid[1] > H // 2:
-					totalDown += 1
-					to.counted = True
+				totalPersons += 1
+				to.counted = True
 
 		# store the trackable object in our dictionary
 		trackableObjects[objectID] = to
@@ -289,9 +271,8 @@ while True:
 	# construct a tuple of information we will be displaying on the
 	# frame
 	info = [
-		("Up", totalUp),
-		("Down", totalDown),
-		("Status", status),
+		("Persons: ", totalPersons),
+		("Status: ", status),
 	]
 
 	# loop over the info tuples and draw them on our frame
@@ -304,10 +285,8 @@ while True:
 	if writer is not None:
 		writer.write(frame)
 
-	
-	# otherwise, no action has taken place in this frame, so
-	# increment the number of consecutive frames that contain
-	# no action
+	# check if no action has taken place in this frame
+	# if so, increment the number of consecutive frames that contain no action
 	if updateConsecFrames:
 		consecFrames += 1
 
