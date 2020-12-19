@@ -21,3 +21,7 @@ Default Args and their meaning here:
 "-f", "--fps", type=int, default=20, help="FPS of output video"
 "-c", "--codec", type=str, default="MJPG", help="codec of output video"
 ```
+If won't restart after multiple runs:
+```
+sudo systemctl restart nvargus-daemon
+```

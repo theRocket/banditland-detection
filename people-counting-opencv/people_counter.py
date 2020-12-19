@@ -13,6 +13,7 @@
 from pyimagesearch.centroidtracker import CentroidTracker
 from pyimagesearch.trackableobject import TrackableObject
 from pyimagesearch.keyclipwriter import KeyClipWriter
+from aws_notification import AwsNotifier
 
 from imutils.video import VideoStream
 from imutils.video import FPS
@@ -59,6 +60,9 @@ camSet+=' ! videoconvert ! video/x-raw, format=BGR ! appsink'
 # frames that have *not* contained any action
 kcw = KeyClipWriter(bufSize=args["buffer_size"])
 consecFrames = 0
+
+# initialize AWS notifier
+aws_sns = AwsNotifier()
 
 # initialize the list of class labels MobileNet SSD was trained to
 # detect
@@ -176,6 +180,9 @@ while True:
 					continue
 				else:
 					updateConsecFrames = True
+					# construct message
+					msg = "Persons counted: "+str(totalPersons+1) # hasn't been incremented yet
+					msg += "\nConfidence level:"+"{:.2f}".format(confidence)
 
 				# reset the number of consecutive frames with *no* action to zero
 				consecFrames = 0
@@ -198,6 +205,8 @@ while True:
 
 				# if we are not already recording, start recording
 				if not kcw.recording:
+					# publish when recording starts
+					aws_sns.publish(msg)
 					timestamp = datetime.datetime.now()
 					p = "{}/{}.avi".format(args["output"],
 						timestamp.strftime("%Y%m%d-%H%M%S"))
